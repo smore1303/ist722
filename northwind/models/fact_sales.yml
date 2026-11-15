@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: fact_sales
+    description: Transaction fact table. One row per line item ordered. Supports sales analysis by customer, employee, product and order date.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - orderid
+              - productkey
+    columns:
+      - name: orderid
+        description: Source key used for drill through. Part of the composite key with productkey
+        tests:
+          - not_null
+      - name: customerkey
+        description: Dimension FK for dim_customer
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customerkey
+      - name: employeekey
+        description: Dimension FK for dim_employee
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_employee')
+                field: employeekey
+      - name: orderdatekey
+        description: Dimension FK for dim_date (order date role)
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: datekey
+      - name: productkey
+        description: Dimension FK for dim_product
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: productkey
+      - name: quantity
+        description: The quantity of the product on the order. Additive
+      - name: extendedpriceamount
+        description: Additive fact for quantity * product price
+      - name: discountamount
+        description: Additive fact for extended price * discount
+      - name: soldamount
+        description: Additive fact for extended price - discount amount
